@@ -1,0 +1,15 @@
+{
+  "manifest_version": 2,
+  "name": "Navigation Log",
+  "version": "0.1.0",
+  "permissions": ["webNavigation", "tabs", "nativeMessaging"],
+  "background": {
+    "scripts": [ "background.js" ]
+  },
+  "applications": {
+    "gecko": {
+      "id": "navigation_log@prekageo",
+      "strict_min_version": "54.0"
+    }
+  }
+}
