@@ -57,7 +57,7 @@ function logNavigation(evt, tab) {
   delete extra[evt.tabId];
 }
 
-browser.webNavigation.onCommitted.addListener(evt => {
+function _logNavigation(evt) {
   if (!started || evt.frameId !== 0) {
     return;
   }
@@ -67,7 +67,11 @@ browser.webNavigation.onCommitted.addListener(evt => {
       logNavigation(evt, tab);
     }
   });
-});
+}
+
+browser.webNavigation.onCommitted.addListener(_logNavigation);
+browser.webNavigation.onHistoryStateUpdated.addListener(_logNavigation);
+browser.webNavigation.onReferenceFragmentUpdated.addListener(_logNavigation);
 
 browser.webNavigation.onDOMContentLoaded.addListener(evt => {
   if (!started || evt.frameId !== 0) {
