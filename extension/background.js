@@ -3,15 +3,24 @@ var sourceTabId = {};
 var extra = {};
 var port;
 var started = false;
+var DEBUG = false;
 
 function connect() {
-  port = browser.runtime.connectNative('navigation_log');
-  port.onDisconnect.addListener(p => {
-    started = false;
-    setTimeout(() => {
-      connect();
-    }, 1000);
-  });
+  if (DEBUG) {
+    port = {
+      postMessage: (x) => {
+        console.log(x);
+      }
+    };
+  } else {
+    port = browser.runtime.connectNative('navigation_log');
+    port.onDisconnect.addListener(p => {
+      started = false;
+      setTimeout(() => {
+        connect();
+      }, 1000);
+    });
+  }
 
   browser.tabs.query({}).then(tabs => {
     var now = (new Date()).getTime();
