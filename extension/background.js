@@ -46,7 +46,7 @@ browser.tabs.onRemoved.addListener(tabId => {
 });
 
 browser.webNavigation.onCreatedNavigationTarget.addListener(evt => {
-  if (!started || evt.sourceFrameId !== 0) {
+  if (!started) {
     return;
   }
   urlFromTab[evt.tabId] = urlFromTab[evt.sourceTabId];
