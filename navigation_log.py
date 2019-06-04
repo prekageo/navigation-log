@@ -29,7 +29,7 @@ class PlatformWindows():
 
         f = open(self.cmdpath, 'w')
         f.write('@echo off\n')
-        f.write(f'"{sys.executable}" "{SCRIPT}"\n')
+        f.write('"%s" "%s"\n' % (sys.executable, SCRIPT))
         f.close()
 
         f = open(self.jsonpath, 'w')
@@ -53,7 +53,7 @@ def install():
     if system == 'Windows':
         PlatformWindows().install()
     else:
-        print(f'Unsupported platform {system}.', file=sys.stderr)
+        print('Unsupported platform %s.' % system, file=sys.stderr)
         print('See https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Native_manifests for implementation details.', file=sys.stderr)
 
 def uninstall():
