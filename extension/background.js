@@ -4,6 +4,40 @@ var extra = {};
 var port;
 var started = false;
 var DEBUG = false;
+var optin_incognito = false;
+
+enableIfOptin();
+
+browser.runtime.onMessage.addListener((message, sender) => {
+  if (DEBUG) { console.log("got message from popup", message, sender); }
+  browser.storage.local.set(message).then(() => {
+    enableIfOptin();
+  });
+});
+
+function enableIfOptin() {
+  browser.storage.local.get(["optin", "optin_incognito"], function(result) {
+    if (DEBUG) { console.log("enableIfOptin", result); }
+    optin_incognito = result.optin_incognito;
+    if (result.optin) {
+      enable();
+    } else {
+      browser.tabs.create({ url: "opt-in.html" });
+    }
+  });
+}
+
+function enable() {
+  if (DEBUG) { console.log("enabling"); }
+  browser.tabs.onCreated.addListener(onTabCreated);
+  browser.tabs.onRemoved.addListener(onTabRemoved);
+  browser.webNavigation.onCreatedNavigationTarget.addListener(onCreatedNavigationTarget);
+  browser.webNavigation.onCommitted.addListener(_logNavigation);
+  browser.webNavigation.onHistoryStateUpdated.addListener(_logNavigation);
+  browser.webNavigation.onReferenceFragmentUpdated.addListener(_logNavigation);
+  browser.webNavigation.onDOMContentLoaded.addListener(onDOMContentLoaded);
+  connect();
+}
 
 function connect() {
   if (DEBUG) {
@@ -33,25 +67,25 @@ function connect() {
   });
 }
 
-browser.tabs.onCreated.addListener(tab => {
+function onTabCreated(tab) {
   if (started) {
     port.postMessage([(new Date()).getTime(), 'tab_create', undefined, tab.id, undefined, tab.url, tab.title, {incognito: tab.incognito}]);
   }
-});
+}
 
-browser.tabs.onRemoved.addListener(tabId => {
+function onTabRemoved(tabId) {
   if (started) {
     port.postMessage([(new Date()).getTime(), 'tab_remove', undefined, tabId]);
   }
-});
+}
 
-browser.webNavigation.onCreatedNavigationTarget.addListener(evt => {
+function onCreatedNavigationTarget(evt) {
   if (!started) {
     return;
   }
   urlFromTab[evt.tabId] = urlFromTab[evt.sourceTabId];
   sourceTabId[evt.tabId] = evt.sourceTabId;
-});
+}
 
 function logNavigation(evt, tab) {
   if (extra[evt.tabId] === undefined) {
@@ -78,17 +112,11 @@ function _logNavigation(evt) {
   });
 }
 
-browser.webNavigation.onCommitted.addListener(_logNavigation);
-browser.webNavigation.onHistoryStateUpdated.addListener(_logNavigation);
-browser.webNavigation.onReferenceFragmentUpdated.addListener(_logNavigation);
-
-browser.webNavigation.onDOMContentLoaded.addListener(evt => {
+function onDOMContentLoaded(evt) {
   if (!started || evt.frameId !== 0) {
     return;
   }
   browser.tabs.get(evt.tabId).then(tab => {
     logNavigation(evt, tab);
   });
-});
-
-connect();
+}
