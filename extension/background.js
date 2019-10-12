@@ -96,7 +96,7 @@ function onCreatedNavigationTarget(evt) {
 }
 
 function logNavigation(evt, tab) {
-  if (extra[evt.tabId] === undefined || !allowedTabs.has(evt.tabId)) {
+  if (!allowedTabs.has(evt.tabId)) {
     return;
   }
   var srcUrl = urlFromTab[evt.tabId];
