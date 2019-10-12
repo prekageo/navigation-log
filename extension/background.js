@@ -5,6 +5,7 @@ var port;
 var started = false;
 var DEBUG = false;
 var optin_incognito = false;
+var allowedTabs = new Set();
 
 enableIfOptin();
 
@@ -61,7 +62,10 @@ function connect() {
     port.postMessage([now, 'start'])
     for (let tab of tabs) {
       urlFromTab[tab.id] = tab.url;
-      port.postMessage([now, 'tab_init', undefined, tab.id, undefined, tab.url, tab.title, {incognito: tab.incognito}])
+      if (!tab.incognito || optin_incognito) {
+        allowedTabs.add(tab.id);
+        port.postMessage([now, 'tab_init', undefined, tab.id, undefined, tab.url, tab.title, {incognito: tab.incognito}])
+      }
     }
     started = true;
   });
@@ -69,18 +73,22 @@ function connect() {
 
 function onTabCreated(tab) {
   if (started) {
-    port.postMessage([(new Date()).getTime(), 'tab_create', undefined, tab.id, undefined, tab.url, tab.title, {incognito: tab.incognito}]);
+    if (!tab.incognito || optin_incognito) {
+      allowedTabs.add(tab.id);
+      port.postMessage([(new Date()).getTime(), 'tab_create', undefined, tab.id, undefined, tab.url, tab.title, {incognito: tab.incognito}]);
+    }
   }
 }
 
 function onTabRemoved(tabId) {
   if (started) {
+    allowedTabs.delete(tabId);
     port.postMessage([(new Date()).getTime(), 'tab_remove', undefined, tabId]);
   }
 }
 
 function onCreatedNavigationTarget(evt) {
-  if (!started) {
+  if (!started || !allowedTabs.has(evt.tabId)) {
     return;
   }
   urlFromTab[evt.tabId] = urlFromTab[evt.sourceTabId];
@@ -88,7 +96,7 @@ function onCreatedNavigationTarget(evt) {
 }
 
 function logNavigation(evt, tab) {
-  if (extra[evt.tabId] === undefined) {
+  if (extra[evt.tabId] === undefined || !allowedTabs.has(evt.tabId)) {
     return;
   }
   var srcUrl = urlFromTab[evt.tabId];
@@ -101,7 +109,7 @@ function logNavigation(evt, tab) {
 }
 
 function _logNavigation(evt) {
-  if (!started || evt.frameId !== 0) {
+  if (!started || evt.frameId !== 0 || !allowedTabs.has(evt.tabId)) {
     return;
   }
   extra[evt.tabId] = [evt.transitionType, evt.transitionQualifiers];
@@ -113,7 +121,7 @@ function _logNavigation(evt) {
 }
 
 function onDOMContentLoaded(evt) {
-  if (!started || evt.frameId !== 0) {
+  if (!started || evt.frameId !== 0 || !allowedTabs.has(evt.tabId)) {
     return;
   }
   browser.tabs.get(evt.tabId).then(tab => {
