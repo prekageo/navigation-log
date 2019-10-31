@@ -88,6 +88,7 @@ function onTabRemoved(tabId) {
 }
 
 function onCreatedNavigationTarget(evt) {
+  if (DEBUG) { console.log("onCreatedNavigationTarget", evt); }
   if (!started || !allowedTabs.has(evt.tabId)) {
     return;
   }
@@ -109,6 +110,7 @@ function logNavigation(evt, tab) {
 }
 
 function _logNavigation(evt) {
+  if (DEBUG) { console.log("_logNavigation", evt); }
   if (!started || evt.frameId !== 0 || !allowedTabs.has(evt.tabId)) {
     return;
   }
@@ -121,6 +123,7 @@ function _logNavigation(evt) {
 }
 
 function onDOMContentLoaded(evt) {
+  if (DEBUG) { console.log("onDOMContentLoaded", evt); }
   if (!started || evt.frameId !== 0 || !allowedTabs.has(evt.tabId)) {
     return;
   }
