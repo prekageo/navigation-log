@@ -89,7 +89,7 @@ function onTabRemoved(tabId) {
 
 function onCreatedNavigationTarget(evt) {
   if (DEBUG) { console.log("onCreatedNavigationTarget", evt); }
-  if (!started || !allowedTabs.has(evt.tabId)) {
+  if (!started || !allowedTabs.has(evt.sourceTabId)) {
     return;
   }
   urlFromTab[evt.tabId] = urlFromTab[evt.sourceTabId];
