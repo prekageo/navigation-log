@@ -4,7 +4,6 @@ var extra = {};
 var port;
 var started = false;
 var DEBUG = false;
-var optin_incognito = false;
 
 enableIfOptin();
 
@@ -16,9 +15,8 @@ browser.runtime.onMessage.addListener((message, sender) => {
 });
 
 function enableIfOptin() {
-  browser.storage.local.get(["optin", "optin_incognito"], function(result) {
+  browser.storage.local.get(["optin"], function(result) {
     if (DEBUG) { console.log("enableIfOptin", result); }
-    optin_incognito = result.optin_incognito;
     if (result.optin) {
       enable();
     } else {
