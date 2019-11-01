@@ -59,7 +59,7 @@ function connect() {
     port.postMessage([now, 'start'])
     for (let tab of tabs) {
       urlFromTab[tab.id] = tab.url;
-      port.postMessage([now, 'tab_init', undefined, tab.id, undefined, tab.url, tab.title, {incognito: tab.incognito}])
+      port.postMessage([now, 'tab_init', undefined, tab.id, undefined, tab.url, tab.title])
     }
     started = true;
   });
@@ -67,7 +67,7 @@ function connect() {
 
 function onTabCreated(tab) {
   if (started) {
-    port.postMessage([(new Date()).getTime(), 'tab_create', undefined, tab.id, undefined, tab.url, tab.title, {incognito: tab.incognito}]);
+    port.postMessage([(new Date()).getTime(), 'tab_create', undefined, tab.id, undefined, tab.url, tab.title]);
   }
 }
 
